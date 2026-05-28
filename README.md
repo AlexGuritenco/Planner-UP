@@ -10,7 +10,6 @@ At the current stage, the frontend already implements the full UI flow for authe
 project/
 ├── frontend/      # React + Vite client
 ├── backend/       # Express + TypeScript API
-├── old_backend/   # Legacy backend kept for reference
 └── README.md
 ```
 
@@ -178,7 +177,3 @@ What is still missing or partial:
 - persistent database storage
 - real authentication/session handling
 - production-ready account and task ownership logic
-
-## Important Note About `old_backend`
-
-The `old_backend/` directory is an older backend implementation that still exists in the repository, but the current active backend is `backend/`.
