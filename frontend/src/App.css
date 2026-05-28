@@ -1,0 +1,917 @@
+/*1: Global css for each page*/
+:root {
+  --color-primary: hsl(269 94% 26%);
+  --color-primary-hover:  hsl(269, 94%, 36%);
+  --color-secondary:      hsl(0, 3%, 19%);
+  --color-secondary-hover:hsl(0, 3%, 29%);
+
+  --text-main:  hsl(0, 0%, 80%);
+  --text-muted: hsl(0, 0%, 60%);
+  --text-light: hsl(0, 0%, 100%);
+
+  --bg-page: hsl(0, 0%, 0%);
+  --bg-card: hsl(0, 0%, 10%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.page {
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-page);
+  min-height: 100vh;
+  color: var(--text-main);
+}
+
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+  border-top: 1px solid hsl(0, 0%, 100%);
+}
+
+/*2: Shared — Header, nav, buttons, page layout*/
+
+.site-header {
+  background-color: var(--color-primary);
+  color: var(--text-light);
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.site-header--compact {
+  padding: 1.25rem 1rem;
+}
+
+.site-header__title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.site-header__subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+/* --- Navigation --- */
+.nav {
+  margin-top: 1.5rem;
+}
+
+.nav__list {
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  flex-wrap: wrap;
+}
+/* will make the button and the link the exact same font */
+.nav__link,
+.nav__button {
+  font: inherit;
+  font-size: 1.1rem;
+  color: hsla(0, 0%, 100%, 0.6);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.25s ease;
+
+
+  background: transparent;
+  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  line-height: 1;
+}
+
+
+.nav__link:hover,
+.nav__button:hover {
+  color: var(--text-light);
+  background-color: hsla(0, 0%, 100%, 0.1);
+  outline: 1px solid hsla(0, 0%, 100%, 0.35);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsla(0, 0%, 100%, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 10px 32px 0 hsla(0, 0%, 0%, 0.37);
+  transform: scale(1.05);
+}
+
+
+.nav__link:active,
+.nav__button:active {
+  color: var(--text-light);
+  background-color: hsla(0, 0%, 100%, 0.15);
+  transform: scale(0.97);
+  box-shadow: 0 10px 32px 0 hsla(0, 0%, 0%, 0.37);
+}
+
+
+.nav__link[aria-current="page"],
+.nav__button[aria-current="page"],
+.nav__link.active,
+.nav__button.active {
+  color: var(--text-light);
+  font-weight: 750;
+}
+.hamburger-menu {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--text-light);
+  margin: 1rem auto 0;
+}
+
+@media (max-width: 768px) {
+  /*Make everything larger*/
+  html {
+    font-size: 115%;
+  }
+  /* Header */
+  .site-header__title {
+    font-size: 1.6rem;
+  }
+  /* Page padding */
+  .page-content {
+    padding: 1rem;
+  }
+
+  /* for stats single column */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* for auth card reduce padding */
+  .auth-card {
+    padding: 1.5rem 1rem;
+  }
+
+  /* Dashboard actions button — full width */
+  .dashboard-actions .button { width: 100%; }
+
+  /*Hide the description */
+  .task-table th:nth-child(3),
+  .task-table th:nth-child(3) {
+    display: none;
+  }
+
+  /*Hide the description text as well */
+  .task-table td:nth-child(3),
+  .task-table td:nth-child(3) {
+    display: none;
+  }
+  /*Hamburger button */
+  .hamburger-menu {
+    display: block;
+  }
+  /* for nav list */
+  .nav__list {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    width: 100%;
+  }
+  .nav__link {
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem 1rem;
+  }
+  .nav__list.active {
+    display: flex;
+  }
+}
+
+/* --- Buttons --- */
+.button {
+  font-family: inherit;
+  font-size: 1rem;
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button--primary {
+  background: linear-gradient(135deg, #6d28d9, #9333ea);
+  color: var(--text-light);
+  box-shadow: 0 0 16px 4px hsla(271, 82%, 56%, 0.55),
+  0 6px 18px hsla(271, 82%, 56%, 0.4);
+  border-radius: 10px;
+  border: 1px solid hsla(0, 0%, 100%, 0.25);
+}
+
+.button--primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px 0 hsla(0,0%,0%, 0.37);
+}
+
+.button--secondary {
+  /*background-color: var(--color-secondary);*/
+  color: var(--text-light);
+  background: hsla(0, 0%, 100%, 0.08);
+  border: 1px solid hsla(0, 0%, 100%, 0.25);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+}
+
+.button--secondary:hover {
+  background-color: var(--color-secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px 0 hsla(0,0%,0%, 0.37);
+}
+
+/* --- Page content layout (inner pages) --- */
+.page-content {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/*3: Index — Landing page (index.html)*/
+
+.site-content {
+  flex: 1;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.hero {
+  text-align: center;
+}
+
+.hero__title {
+  font-size: 1.8rem;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+.hero__text {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.hero__card {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid hsl(0, 0%, 100%);
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/*4: Auth — Forms (login.html, signup.html, account.html)*/
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-secondary-hover);
+  text-align: center;
+}
+
+.auth-card__title {
+  margin-bottom: 1.5rem;
+  color: var(--text-main);
+  font-size: 2rem;
+}
+
+.auth-card__links p {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.auth-card__links a {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  text-decoration: none;
+  font-weight: 600;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.auth-card__links a:hover {
+  color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  text-shadow: 0 1px 8px rgba(147, 51, 234, 0.6);
+}
+
+.auth-card__links a:hover::after {
+  width: 100%;
+}
+.fa-solid {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+/* --- Form elements --- */
+.form {
+  text-align: left;
+}
+
+.form__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form__legend {
+  display: none;
+}
+
+.form__group {
+  margin-bottom: 1.25rem;
+}
+
+.form__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.form__input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-secondary-hover);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form__input-wrapper,
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form__icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  pointer-events: none;
+}
+
+.form__input--with-icon {
+  padding-right: 2.5rem;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eye-btn:hover {
+  color: var(--text-light);
+}
+
+.form__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.form__submit {
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+/* 5: DASHBOARD — Task tables & actions (dashboard.html) */
+
+.dashboard-section {
+  margin-bottom: 1rem;
+}
+
+.dashboard-section__title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--color-primary);
+  display: inline-block;
+}
+
+.dashboard-actions {
+  margin: 1.25rem 0;
+}
+
+/* --- Task table --- */
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.task-table th,
+.task-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid hsl(0, 0%, 20%);
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.task-table th {
+  font-size: 1rem;
+  background-color: var(--color-primary);
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+.task-table tbody tr:hover {
+  background-color: hsl(0, 0%, 15%);
+}
+
+/* --- Table action links --- */
+.task-table__action {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  font-family: inherit;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-right: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.task-table__action--edit {
+  font-size: 1rem;
+  color: var(--color-primary-hover);
+  background-color: hsla(269, 93%, 31%, 0.15);
+}
+
+.task-table__action--edit:hover {
+  background-color: hsla(269, 93%, 31%, 0.3);
+}
+
+.task-table__action--delete {
+  font-size: 1rem;
+  color: hsl(0, 70%, 55%);
+  background-color: hsla(0, 70%, 55%, 0.1);
+}
+
+.task-table__action--delete:hover {
+  background-color: hsla(0, 70%, 55%, 0.25);
+}
+
+/* --- Checkbox --- */
+.task-table input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+
+/* 6: AGENDA — Deadline cards (agenda.html) */
+
+.agenda-group {
+  margin-bottom: 2rem;
+}
+
+.agenda-group__heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+/* --- Deadline card --- */
+.deadline-card {
+  background-color: var(--bg-card);
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.deadline-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.deadline-card__detail {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.deadline-card__status {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deadline-card__status--pending {
+  background-color: hsla(40, 90%, 50%, 0.15);
+  color: hsl(40, 90%, 60%);
+}
+
+.deadline-card__status--done {
+  background-color: hsla(140, 60%, 40%, 0.15);
+  color: hsl(140, 60%, 55%);
+}
+
+
+/* 7: STATS — Progress & history (stats.html) */
+
+.stats-section {
+  margin-bottom: 2.5rem;
+}
+
+/* --- Stat cards grid --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.stat-card {
+  background-color: var(--bg-card);
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 0.5rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.stat-card__label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stat-card--target {
+  border-color: hsla(208, 97%, 47%, 0.4);
+}
+.stat-card--target .stat-card__value {
+  color: hsl(208, 97%, 47%);
+}
+
+.stat-card--done {
+  border-color: hsla(140, 60%, 40%, 0.4);
+}
+
+.stat-card--done .stat-card__value {
+  color: hsl(140, 60%, 55%);
+}
+
+.stat-card--remaining {
+  border-color: hsla(40, 90%, 50%, 0.4);
+}
+
+.stat-card--remaining .stat-card__value {
+  color: hsl(40, 90%, 60%);
+}
+
+/* --- Progress bar --- */
+.progress-block {
+  margin-top: 0.5rem;
+}
+
+.progress-block__label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 0.75rem;
+  border-radius: 999px;
+  appearance: none;
+  background-color: hsl(0, 0%, 20%);
+  display: block;
+}
+
+.progress-bar::-webkit-progress-bar {
+  background-color: hsl(0, 0%, 20%);
+  border-radius: 999px;
+}
+
+.progress-bar::-webkit-progress-value {
+  background-color: var(--color-primary);
+  border-radius: 999px;
+}
+
+.progress-bar::-moz-progress-bar {
+  background-color: var(--color-primary);
+  border-radius: 999px;
+}
+
+.progress-block__pct {
+  display: block;
+  text-align: right;
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+/* --- History list --- */
+.history-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.history-list__item {
+  background-color: var(--bg-card);
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.history-list__item--reached {
+  border-color: hsla(140, 60%, 40%, 0.4);
+  color: hsl(140, 60%, 55%);
+}
+.nav__link.active {
+  color: var(--text-light);
+  font-weight: 750;
+}
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: hsla(0, 0%, 0%, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--color-secondary-hover);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.5);
+  text-align: center;
+}
+.modal-card textarea.form__input {
+  resize: vertical;
+  min-height: 80px;
+}
+/*Chrome's autofill  is overlapping with the eye icon */
+.password-wrapper .form__input {
+  padding-right: 2.5rem;
+}
+
+/* MUI Dialog -> the pop-up for confirm */
+.MuiDialog-paper {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--color-secondary-hover) !important;
+  border-radius: 8px !important;
+}
+
+.MuiDialogTitle-root {
+  color: var(--text-main) !important;
+  text-align: center !important;
+  font-size: 1.5rem !important;
+  font-weight: 500 !important;
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem !important;
+  border-bottom: 1px solid var(--color-secondary-hover) !important;
+}
+
+.MuiDialogContent-root {
+  color: var(--text-muted) !important;
+  border-color: hsl(0, 0%, 20%) !important;
+  text-align: center !important;
+  font-size: 1.2rem !important;
+  font-weight: 500 !important;
+  padding: 1.5rem 2rem !important;
+  display: flex;
+  align-items: center !important;
+  justify-content: center !important;
+  /*height: 6rem !important;*/
+}
+
+.MuiButton-root {
+  font-family: inherit !important;
+}
+
+/*Confirm button for pop-up*/
+.MuiButton-contained {
+  font-family: inherit !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  background: linear-gradient(135deg, #6d28d9, #9333ea) !important;
+  color: var(--text-light) !important;
+  border-radius: 10px !important;
+  border: 1px solid hsla(0, 0%, 100%, 0.25) !important;
+  padding: 0.5rem 1.25rem !important;
+  box-shadow: 0 0 16px 4px hsla(271, 91%, 65%, 0.4),
+  0 6px 18px hsla(271, 91%, 65%, 0.28) !important;
+  transition: all 0.25s ease !important;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 32px 0 hsla(0, 0%, 0%, 0.37) !important;
+}
+
+.MuiButton-contained:active,
+.MuiButton-text:active {
+  transform: scale(0.97) !important;
+}
+
+/*Cancel button for the pop-up*/
+.MuiButton-text {
+  color: var(--text-light) !important;
+  font-family: inherit !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  background: hsla(0, 0%, 100%, 0.08) !important;
+  border: 1px solid hsla(0, 0%, 100%, 0.25) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: all 0.25s ease !important;
+}
+.MuiButton-text:hover {
+  background-color: var(--color-secondary-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 32px 0 hsla(0, 0%, 0%, 0.37) !important;
+}
+
+/*Allign the buttons in the center*/
+.MuiDialogActions-root {
+  padding: 1rem 1.5rem 1.5rem 1.5rem !important;
+  justify-content: center !important;
+  gap: 1rem !important;
+}
+
+/*Calendar css*/
+.react-datepicker-wrapper {
+  width: 100%;
+  display: block;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+  display: block;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.react-datepicker {
+  font-family: inherit;
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--color-secondary-hover) !important;
+  border-radius: 8px !important;
+}
+
+.react-datepicker__header {
+  background-color: var(--color-primary) !important;
+  border-bottom: 1px solid var(--color-secondary-hover) !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker-time__header {
+  color: var(--text-light) !important;
+}
+
+.react-datepicker__day {
+  color: var(--text-main) !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--color-secondary-hover) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--text-light) !important;
+}
+
+.form__error {
+  margin-top: 0.45rem;
+  color: #fca5a5;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/*Error notification - a special css for it */
+.ant-notification-notice-wrapper {
+  background-color: hsl(51 100% 50%) !important;
+}
+
+.ant-notification-notice-title {
+  color: hsl(0 0% 0%) !important;
+  font-weight: 500 !important;
+  font-size: 1.15rem !important;
+}
+.anticon-close-circle {
+  color: hsl(0 100% 29%) !important;
+  border-radius: 50%;
+  box-shadow: none !important;
+}
