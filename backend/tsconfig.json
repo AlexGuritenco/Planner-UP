@@ -1,0 +1,64 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "strict": true,
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@src/*": ["src/*"]
+    },
+    "useUnknownInCatchVariables": false,
+    "types": ["vitest/globals"]
+  },
+  "ts-node": {
+    "swc": true,
+    "require": ["tsconfig-paths/register", "dotenv/config"],
+  },
+
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "scripts",
+    "eslint.config.ts",
+    "vitest.config.mts"
+  ],
+  "exclude": ["src/public/*"],
+  // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+
+    // a useful function, if typescript finds an error, it will not generate js files inside dist
+    "noEmitOnError": true,
+    // another one is to make the compiler complain about 'any' type
+    "noImplicitAny": true,
+    // check the casing in file names, force it to be consistent
+    "forceConsistentCasingInFileNames": true,
+    // we can also allow json to import
+    "resolveJsonModule": true,
+    // we would also like to report any unused parameters inside a function
+    "noUnusedParameters": true,
+    // or just force to have a return type
+    "noImplicitReturns": true,
+    // recommended
+    "esModuleInterop": true,
+    // for null, false and undefined
+    "strictNullChecks": true,
+    // good for checking the parameters of a function
+    "strictFunctionTypes": true,
+    // raise also an error when a class property was declared but not set
+    // and for 'this'
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    // even stricter
+    "alwaysStrict": true,
+    "allowImportingExtensions": true
+}
