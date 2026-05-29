@@ -173,7 +173,6 @@ What is already implemented:
 
 What is still missing or partial:
 
-- frontend to backend API integration
 - persistent database storage
 - real authentication/session handling
 - production-ready account and task ownership logic
