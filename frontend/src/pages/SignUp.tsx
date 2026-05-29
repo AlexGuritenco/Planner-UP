@@ -67,7 +67,7 @@ export default function Signup() {
                 pass1: password.pass1,
                 pass2: password.pass2,
             });
-            notification.success({message: 'Account created! Please log in.'});
+            notification.success({title: 'Account created! Please log in.'});
             navigate('/login');
         } catch (error: any) {
             notification.error({
