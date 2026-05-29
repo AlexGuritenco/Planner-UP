@@ -1,6 +1,15 @@
-import {formatDueDate} from "../utils/dateUtils.js";
+import {formatDueDate} from "../utils/dateUtils";
+import type {Task} from "./types";
 
-export default function TaskRow({task, index, onEdit, onToggle, onDelete}) {
+type TaskRowProps = {
+    task: Task;
+    index: number;
+    onEdit: (task: Task) => void;
+    onToggle: () => void;
+    onDelete: (taskId: number) => void;
+}
+
+export default function TaskRow({task, index, onEdit, onToggle, onDelete}: TaskRowProps) {
     return (
         <tr key={task.id}>
             <td>{index + 1}</td>

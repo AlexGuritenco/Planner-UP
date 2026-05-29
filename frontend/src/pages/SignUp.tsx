@@ -1,12 +1,13 @@
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {CiUser} from "react-icons/ci";
 import {MdEmail} from "react-icons/md";
 import PasswordInput from "../components/PasswordHandler";
 import {notification} from 'antd'
-import {emailValidation, usernameValidation} from '../utils/validators.js';
-import AuthLayout from "../components/AuthLayout.jsx";
+import {emailValidation, usernameValidation} from '../utils/validators';
+import AuthLayout from "../components/AuthLayout";
 import AuthInput from "../components/AuthInput";
+import api from "../api";
 
 export default function Signup() {
     const navigate = useNavigate()
@@ -17,50 +18,62 @@ export default function Signup() {
         pass2: '',
     })
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
         if (!username.trim()) {
-            notification.error({message: 'Username required'})
+            notification.error({title: 'Username required'})
             return
         }
         if (!usernameValidation(username)) {
-            notification.error({message: 'Please enter a valid username'})
+            notification.error({title: 'Please enter a valid username'})
             return
         }
 
         if (!email.trim()) {
-            notification.error({message: 'Email required'})
+            notification.error({title: 'Email required'})
             return
         }
         if (!emailValidation(email)) {
-            notification.error({message: 'Please enter a valid email address'})
+            notification.error({title: 'Please enter a valid email address'})
             return
         }
         if (!password.pass1.trim()) {
-            notification.error({message: 'Password required'})
+            notification.error({title: 'Password required'})
             return
         }
         if (password.pass1.length < 6 || password.pass1.length > 20) {
-            notification.error({message: 'Password must be between 6-20 characters long'})
+            notification.error({title: 'Password must be between 6-20 characters long'})
             return
         }
 
         if (!password.pass2.trim()) {
-            notification.error({message: 'Confirm your password'})
+            notification.error({title: 'Confirm your password'})
             return
         }
         if (password.pass2.length < 6 || password.pass2.length > 20) {
-            notification.error({message: 'Confirm password must be between 6-20 characters long'})
+            notification.error({title: 'Confirm password must be between 6-20 characters long'})
             return
         }
 
         if (password.pass1 !== password.pass2) {
-            notification.error({message: 'Passwords must match'})
+            notification.error({title: 'Passwords must match'})
             return
         }
-
-        navigate('/dashboard')
+        try {
+            const response = await api.post('/auth/register', {
+                username,
+                email,
+                pass1: password.pass1,
+                pass2: password.pass2,
+            });
+            notification.success({message: 'Account created! Please log in.'});
+            navigate('/login');
+        } catch (error: any) {
+            notification.error({
+                title: error.response?.data?.message ?? 'Signup failed',
+            });
+        }
     }
 
     return (
@@ -90,7 +103,7 @@ export default function Signup() {
                         id={"email"}
                         name={"Email"}
                         icon={<MdEmail className="form__icon form__icon--right"/>}
-                        >
+                    >
                         <input
                             className="form__input form__input--with-icon"
                             type="email"

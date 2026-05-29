@@ -1,9 +1,15 @@
-import PageLayout from '../components/PageLayout.jsx'
-import {getDueBucket} from '../utils/dateUtils.js'
-import DeadlineCard from '../components/DeadlineCard.jsx'
+import PageLayout from '../components/PageLayout'
+import {getDueBucket} from '../utils/dateUtils'
+import DeadlineCard from '../components/DeadlineCard'
+import type {Task} from "../components/types";
 
-export default function Agenda({tasks}) {
-    const groups = [
+type AgendaGroup = {
+    label: string
+    tasks: Task[]
+}
+
+export default function Agenda({tasks}: { tasks: Task[] }) {
+    const groups: AgendaGroup[] = [
         {label: 'Overdue', tasks: []},
         {label: 'Today', tasks: []},
         {label: 'Tomorrow', tasks: []},

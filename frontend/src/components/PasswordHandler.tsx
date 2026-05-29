@@ -2,9 +2,21 @@ import {useState} from 'react';
 // open eye icon
 import {BsFillEyeFill, BsFillEyeSlashFill} from "react-icons/bs";
 // close eye icon
-import '../App.css';
+import '../App';
+import React from "react";
 
-export default function PasswordHandler({value, onChange, type, ...rest}) {
+type PasswordHandlerProps = {
+    className?: string;
+    id?: string;
+    name?: string;
+    required: boolean
+    value: string;
+    onChange:  React.ChangeEventHandler<HTMLInputElement, HTMLInputElement>
+    type?: string;
+    autoComplete?: string;
+}
+
+export default function PasswordHandler({value, onChange, type, ...rest}: PasswordHandlerProps) {
     const [show, setShow] = useState(false);
 
     return (

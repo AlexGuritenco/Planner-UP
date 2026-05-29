@@ -1,58 +1,75 @@
-import {useState} from 'react'
-import PageLayout from "../components/PageLayout.jsx";
+import React, {useState, useEffect} from 'react';
+import PageLayout from "../components/PageLayout";
 import PasswordInput from "../components/PasswordHandler";
-import {usernameValidation} from '../utils/validators.js';
+import {usernameValidation} from '../utils/validators';
 import {CiUser} from "react-icons/ci";
 import AuthInput from "../components/AuthInput";
-import {notification} from 'antd'
+import {notification} from 'antd';
+import api from '../api';
+import {useAuth} from '../AuthContext';
 
 export default function Account() {
+    const {user} = useAuth();
     const [form, setForm] = useState({
         username: '',
         pass1: '',
         pass2: ''
     })
+    useEffect(() => {
+    if (user?.id) {
+      api.get(`/account/${user.id}`)
+         .then(res => setForm(prev => ({ ...prev, username: res.data.username })));
+    }
+  }, [user?.id]);
     const [saved, setSaved] = useState(false)
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSaved(false)
         setForm(prev => ({...prev, [e.target.name]: e.target.value}))
     }
-    const handleSubmit = (e) => {
-        e.preventDefault()
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (!form.username.trim()) {
-            notification.error({message: 'Username required'})
+            notification.error({title: 'Username required'})
             return
         }
         if (!usernameValidation(form.username)) {
-            notification.error({message: 'Please enter a valid username'})
+            notification.error({title: 'Please enter a valid username'})
             return
         }
         if (!form.pass1.trim()) {
-            notification.error({message: 'Password required'})
+            notification.error({title: 'Password required'})
             return
         }
         if (form.pass1.length < 6 || form.pass1.length > 20) {
-            notification.error({message: 'Password must be between 6-20 characters long'})
+            notification.error({title: 'Password must be between 6-20 characters long'})
             return
         }
 
         if (!form.pass2.trim()) {
-            notification.error({message: 'Confirm your password'})
+            notification.error({title: 'Confirm your password'})
             return
         }
         if (form.pass2.length < 6 || form.pass2.length > 20) {
-            notification.error({message: 'Confirm password must be between 6-20 characters long'})
+            notification.error({title: 'Confirm password must be between 6-20 characters long'})
             return
         }
 
         if (form.pass1 !== form.pass2) {
-            notification.error({message: 'Passwords must match'})
+            notification.error({title: 'Passwords must match'})
             return
         }
-
-        setSaved(true)
-        notification.success({ message: 'Changes saved' })
+        try {
+            await api.patch(`/account/${user?.id}`, {
+                username: form.username,
+                password: form.pass1,
+                pass2: form.pass2,
+            });
+            setSaved(true);
+            notification.success({title: 'Account updated successfully'});
+        } catch (error: any) {
+            notification.error({title: error.response?.data?.message ?? 'Failed to update account'});
+        }
     }
 
     return (

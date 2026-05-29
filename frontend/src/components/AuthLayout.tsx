@@ -1,11 +1,18 @@
-import AuthLinks from "./AuthLinks.jsx";
-import Footer from "./Footer.jsx";
+import AuthLinks from "./AuthLinks";
+import Footer from "./Footer";
+import React from "react";
+
+type AuthLayoutProps = {
+    children: React.ReactNode;
+    title: string;
+    mode: 'login' | 'signup';
+}
 
 export default function AuthLayout({
     children,
     title,
     mode,
-}) {
+}: AuthLayoutProps) {
     return (
         <div className="page">
             <header className="site-header">

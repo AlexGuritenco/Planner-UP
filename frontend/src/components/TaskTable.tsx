@@ -1,3 +1,16 @@
+import type {Task} from "./types";
+import React from 'react';
+
+type TaskTableProps = {
+    sectionID: string;
+    text: string;
+    columns: string[];
+    items: Task[];
+    colSpanNr: number;
+    message: string;
+    renderRow: (task: Task, index: number) => React.JSX.Element;
+}
+
 export default function TaskTable({
     sectionID,
     text,
@@ -6,7 +19,7 @@ export default function TaskTable({
     colSpanNr,
     message,
     renderRow,
-}){
+}: TaskTableProps){
     return(
         <section className="dashboard-section" id={sectionID}>
             <h2 className="dashboard-section__title">{text}</h2>

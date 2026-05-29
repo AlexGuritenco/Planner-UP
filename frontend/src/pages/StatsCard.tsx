@@ -1,7 +1,8 @@
-import PageLayout from '../components/PageLayout.jsx'
-import Stats from '../components/Stats.jsx'
+import PageLayout from '../components/PageLayout'
+import Stats from '../components/Stats'
+import type {Task} from "../components/types";
 
-export default function StatsCard({tasks}) {
+export default function StatsCard({tasks}: { tasks: Task[] }) {
     const target = tasks.length
     const completed = tasks.filter(t => t.done).length
     const remaining = target - completed

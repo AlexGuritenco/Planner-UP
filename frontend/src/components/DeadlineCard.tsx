@@ -1,6 +1,11 @@
-import {formatDueDate} from "../utils/dateUtils.js";
+import {formatDueDate} from "../utils/dateUtils";
+import type {Task} from "./types";
 
-export default function DeadlineCard({task}) {
+type DeadlineCardProps = {
+    task: Task;
+}
+
+export default function DeadlineCard({task}: DeadlineCardProps) {
     return (
         <article className="deadline-card" key={task.id}>
             <h4 className="deadline-card__title">{task.title}</h4>

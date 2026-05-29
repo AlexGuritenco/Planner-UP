@@ -1,5 +1,15 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle} from '@mui/material';
 
+type ConfirmDialogProps = {
+    open: boolean;
+    title: string;
+    message: string;
+    onCancel: () => void;
+    onOK: () => void;
+    className?: string;
+    confirmLabel?: string;
+}
+
 export default function ConfirmDialog({
     open,
     title,
@@ -8,7 +18,7 @@ export default function ConfirmDialog({
     onOK,
     className,
     confirmLabel = 'Confirm',
-}) {
+}: ConfirmDialogProps) {
     return (
         <Dialog open={open} onClose={onCancel} className={className}>
             <DialogTitle>{title}</DialogTitle>

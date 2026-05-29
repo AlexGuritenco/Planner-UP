@@ -1,4 +1,13 @@
-export default function CompletedRow({task, index, onDelete}) {
+import React from "react";
+import type {Task} from "./types";
+
+type CompletedRowProps = {
+    task: Task;
+    index: number;
+    onDelete: (taskId: number) => void;
+}
+
+export default function CompletedRow({task, index, onDelete}: CompletedRowProps) {
     return (
         <tr key={task.id}>
             <td>{index + 1}</td>

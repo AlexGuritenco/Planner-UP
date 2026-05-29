@@ -1,10 +1,26 @@
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css";
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {notification} from 'antd'
-import {parseDueDate, serializeDueDate} from '../utils/dateUtils.js'
+import {parseDueDate, serializeDueDate} from '../utils/dateUtils'
+import type {Task} from "./types";
 
-function getInitialForm(existingTask) {
+type getInitialFormProps = {
+    title: string;
+    description: string;
+    due: Date;
+}
+
+type TaskInput = Omit<Task, "id">;
+
+type TaskModalProps = {
+    onClose: () => void;
+    onSave: (task: TaskInput) => void;
+    existingTask: Task | undefined;
+}
+
+
+function getInitialForm(existingTask?: Task): getInitialFormProps {
     return {
         title: existingTask?.title ?? '',
         description: existingTask?.description ?? '',
@@ -12,18 +28,18 @@ function getInitialForm(existingTask) {
     }
 }
 
-export default function TaskModal({onClose, onSave, existingTask}) {
+export default function TaskModal({onClose, onSave, existingTask}: TaskModalProps) {
     const [form, setForm] = useState(() => getInitialForm(existingTask))
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm(prev => ({...prev, [e.target.name]: e.target.value}))
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         if (!form.title.trim()) {
-            notification.error({message: 'Title of task is required'})
+            notification.error({title: 'Title of task is required'})
             return
         }
 
@@ -74,7 +90,7 @@ export default function TaskModal({onClose, onSave, existingTask}) {
                             <label className="form__label" htmlFor="due">Due</label>
                             <DatePicker
                                 selected={form.due}
-                                onChange={(date) => {
+                                onChange={(date: Date | null) => {
                                     if (!date) {
                                         return
                                     }

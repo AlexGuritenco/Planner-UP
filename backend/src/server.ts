@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import logger from 'jet-logger';
 import morgan from 'morgan';
 import path from 'path';
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 import Paths from '@src/common/constants/Paths';
 import { RouteError } from '@src/common/utils/route-errors';
@@ -19,8 +21,11 @@ const app = express();
 // **** Middleware **** //
 
 // Basic middleware
+app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Show routes called in console during development
 if (EnvVars.NodeEnv === NodeEnvs.DEV) {

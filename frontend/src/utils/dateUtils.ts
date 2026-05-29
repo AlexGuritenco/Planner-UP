@@ -1,15 +1,15 @@
 // Idea - calculate the miliseconds to keep track of how much you got left
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
-const pad = (value) => String(value).padStart(2, '0')
+const pad = (value: number) => String(value).padStart(2, '0')
 
 // the function will reset the time, keeping only the things we use in the calendar
-export function startOfDay(date) {
+export function startOfDay(date: Date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
 // check if the input is a Date object or if we have a date to begin with
-export function parseDueDate(value) {
+export function parseDueDate(value: Date| string) {
     if (value instanceof Date && !Number.isNaN(value.getTime())) {
         return startOfDay(value)
     }
@@ -38,14 +38,14 @@ export function parseDueDate(value) {
 }
 
 // returns a formatted date string in YYYY-MM-DD format
-export function serializeDueDate(date) {
+export function serializeDueDate(date: Date) {
     const normalized = startOfDay(date)
     return `${normalized.getFullYear()}-${pad(normalized.getMonth() + 1)}-${pad(normalized.getDate())}`
 }
 
 // this is the time the user sees, because by default its the US
 // converts to the EU one: day, month, year
-export function formatDueDate(value) {
+export function formatDueDate(value: string) {
     return parseDueDate(value).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
@@ -56,7 +56,7 @@ export function formatDueDate(value) {
 // to check how much longer we got till the deadline
 // we get the value and get the difference in time
 // then we check if its overdue, today, tomorrow, next week or later
-export function getDueBucket(value, now = new Date()) {
+export function getDueBucket(value: string, now = new Date()) {
     const dueDate = startOfDay(parseDueDate(value))
     const today = startOfDay(now)
     const diffDays = Math.round((dueDate.getTime() - today.getTime()) / MS_PER_DAY)

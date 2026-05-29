@@ -1,4 +1,10 @@
-export default function Stats({target, className, name}) {
+type StatsProps = {
+    target: number;
+    className?: string;
+    name: string;
+}
+
+export default function Stats({target, className, name}: StatsProps) {
     return (
         <div className={className}>
             <span className="stat-card__value">{target}</span>

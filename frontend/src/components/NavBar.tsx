@@ -1,6 +1,6 @@
 import {useState} from 'react'
 import {NavLink, useNavigate} from 'react-router-dom'
-import ConfirmDialog from './ConfirmDialog.jsx'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function NavBar() {
     const [menuOpen, setMenuOpen] = useState(false)

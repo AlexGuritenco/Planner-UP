@@ -1,21 +1,33 @@
 import {useState} from 'react'
-import TaskModal from '../components/TaskModal.jsx'
-import ConfirmDialog from '../components/ConfirmDialog.jsx'
-import TaskRow from '../components/TaskRow.jsx'
-import PageLayout from '../components/PageLayout.jsx'
-import CompletedRow from "../components/CompletedRow.jsx";
-import TaskTable from '../components/TaskTable.jsx'
+import TaskModal from '../components/TaskModal'
+import ConfirmDialog from '../components/ConfirmDialog'
+import TaskRow from '../components/TaskRow'
+import PageLayout from '../components/PageLayout'
+import CompletedRow from "../components/CompletedRow";
+import TaskTable from '../components/TaskTable'
+import type {Task} from "../components/types";
 
-export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
+type TaskInput = Omit<Task, "id" | "done">;
+
+type DashboardProps = {
+    tasks: Task[]
+    onAdd: (task: TaskInput) => void
+    onDelete: (taskId: number) => void
+    onToggle: (taskId: number) => void
+    onEdit: (taskId: number, updatedTask: TaskInput) => void
+    loading: boolean
+}
+
+export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}: DashboardProps) {
     const [showModal, setShowModal] = useState(false)
-    const [editingTask, setEditingTask] = useState(null)
-    const [deleteTask, setDeleteTask] = useState(null)
-    const [toggleTask, setToggleTask] = useState(null)
+    const [editingTask, setEditingTask] = useState<Task | null>(null)
+    const [deleteTask, setDeleteTask] = useState<number | null>(null)
+    const [toggleTask, setToggleTask] = useState<number | null>(null)
 
     const pendingTasks = tasks.filter(task => !task.done)
     const completedTasks = tasks.filter(task => task.done)
 
-    const handleEdit = (task) => {
+    const handleEdit = (task: Task) => {
         setEditingTask(task)
         setShowModal(true)
     }
@@ -25,7 +37,7 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
         setShowModal(false)
     }
 
-    const handleSave = (updatedTask) => {
+    const handleSave = (updatedTask: TaskInput) => {
         if (editingTask) {
             onEdit(editingTask.id, updatedTask)
         } else {
@@ -35,13 +47,18 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
     }
 
     const handleDeleteConfirm = () => {
-        onDelete(deleteTask)
-        setDeleteTask(null)
+        // onDelete(deleteTask)
+        if (deleteTask !== null) {
+            onDelete(deleteTask)
+            setDeleteTask(null)
+        }
     }
 
     const handleToggleConfirm = () => {
-        onToggle(toggleTask)
-        setToggleTask(null)
+        if (toggleTask !== null) {
+            onToggle(toggleTask)
+            setToggleTask(null)
+        }
     }
 
     return (
@@ -53,7 +70,7 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
                 items={pendingTasks}
                 colSpanNr={6}
                 message={"No pending tasks"}
-                renderRow={(task, index) => (
+                renderRow={(task: Task, index: number) => (
                     <TaskRow
                         key={task.id}
                         task={task}
@@ -81,7 +98,7 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
                 items={completedTasks}
                 colSpanNr={4}
                 message={"No completed tasks yet"}
-                renderRow={(task, index) => (
+                renderRow={(task: Task, index: number) => (
                     <CompletedRow
                         key={task.id}
                         task={task}
@@ -96,7 +113,7 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}) {
                     key={editingTask?.id ?? 'new-task'}
                     onClose={handleClose}
                     onSave={handleSave}
-                    existingTask={editingTask}
+                    existingTask={editingTask ?? undefined}
                 />
             )}
 

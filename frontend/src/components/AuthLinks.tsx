@@ -1,6 +1,9 @@
 import {Link} from "react-router-dom";
 
-export default function AuthLinks({mode}) {
+type AuthLinksProp = {
+    mode: 'login' | 'signup';
+}
+export default function AuthLinks({mode}: AuthLinksProp) {
     if (mode === "login") {
         return (
             <div className="auth-card__links">
