@@ -16,9 +16,10 @@ type DashboardProps = {
     onToggle: (taskId: number) => void
     onEdit: (taskId: number, updatedTask: TaskInput) => void
     loading: boolean
+    errorMessage: string | null
 }
 
-export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}: DashboardProps) {
+export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit, loading, errorMessage}: DashboardProps) {
     const [showModal, setShowModal] = useState(false)
     const [editingTask, setEditingTask] = useState<Task | null>(null)
     const [deleteTask, setDeleteTask] = useState<number | null>(null)
@@ -60,6 +61,10 @@ export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit}: Da
             setToggleTask(null)
         }
     }
+    // the loading logic
+    if (loading) return <PageLayout className="page-content"><p>Loading tasks...</p></PageLayout>
+    if (errorMessage) return <PageLayout className="page-content"><p>{errorMessage}</p></PageLayout>
+
 
     return (
         <PageLayout className={"page-content"}>

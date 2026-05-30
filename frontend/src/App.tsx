@@ -17,17 +17,24 @@ const initialTasks: Task[] = []
 
 export default function App() {
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
-    const [tasksLoaded, setTasksLoaded] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // if we are logged in, we get all the tasks once on mount
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) return;
+        // start the loading
+        setIsLoading(true);
+        setErrorMessage(null);
+
         api.get('/tasks')
             .then(res => setTasks(res.data.tasks ?? []))
-            .catch(() => {
+            .catch(error => {
+                setErrorMessage('Could not load tasks. Please try again.');
+                console.error(error);
             })
-            .finally(() => setTasksLoaded(true));
+            .finally(() => setIsLoading(false));
     }, []);
 
     // add - optimistic update: in case we catch an error, we roll back
@@ -92,15 +99,15 @@ export default function App() {
         <Routes>
             <Route path="/" element={<Home/>}/>
             <Route path="/login" element={
-                    <Login/>
+                <Login/>
             }/>
             <Route path="/signup" element={
-                    <SignUp/>
+                <SignUp/>
             }/>
             <Route path="/dashboard" element={
                 <ProtectedRoute>
                     <Dashboard tasks={tasks} onAdd={addTask} onDelete={deleteTask} onToggle={toggleTask}
-                               onEdit={editTask} loading={!tasksLoaded}/>
+                               onEdit={editTask} loading={isLoading} errorMessage={errorMessage}/>
                 </ProtectedRoute>
 
             }/>

@@ -1,5 +1,6 @@
 import type {NextFunction, Request, Response} from 'express';
 import {Router} from 'express';
+import {NotFoundError, BadRequestError, ConflictError, UnauthorizedError} from "@src/routes/common/customErrors";
 
 const router = Router();
 const bcrypt = require('bcryptjs');
@@ -13,6 +14,7 @@ interface Register {
     email: string;
     pass1: string;
 }
+
 const account: Register[] = [];
 
 const createAccount = (data: Omit<Register, 'id'>): Register => {
@@ -64,45 +66,59 @@ export function customAuthMiddleware(req: Request, res: Response, next: NextFunc
             req.loggedInUser = decodedPayload;
         } catch (error) {
             // We log the reason but don't expose it to the client.
-            console.log('Error verifying token:', error);
+            // console.log('Error verifying token:', error);
+            if (error instanceof jwt.TokenExpiredError) {
+                throw new UnauthorizedError('Token expired');
+            } else if (error instanceof jwt.JsonWebTokenError) {
+                console.log('Invalid token');
+            }
         }
+        next();
     }
-    next();
-}
 
 
 // Post: both login and register/signup and logout
 // The id identifies which task to replace; the full new task comes in the body
-router.post('/register', (req: Request, res: Response) => {
-    try {
-        const data = req.body;
-        if (!data || !data.username || !data.email || !data.pass1 || !data.pass2 || data.pass1 !== data.pass2) {
-            return res.status(400).json({message: 'Required field: Username, Email, Password, Confirm Password'});
+    router.post('/register', (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = req.body;
+            if (!data || !data.username || !data.email || !data.pass1 || !data.pass2 || data.pass1 !== data.pass2) {
+                // return res.status(400).json({message: 'Required field: Username, Email, Password, Confirm Password'});
+                throw new BadRequestError('Required field: Username, Email, Password, Confirm Password');
+            }
+            const exists = account.find(a => a.email === data.email);
+            if (exists) {
+                throw new ConflictError('Email already is use');
+            }
+            return res.status(201).json(createAccount(data));
+        } catch (error) {
+            // console.error('Error creating account:', error);
+            // return res.status(500).json({message: 'Internal server error'});
+            next(error);
         }
-        return res.status(201).json(createAccount(data));
-    } catch (error) {
-        console.error('Error creating account:', error);
-        return res.status(500).json({message: 'Internal server error'});
-    }
-});
+    });
 
-router.post('/login', async (req: Request, res: Response) => {
-    try {
-        const data = req.body;
-        if (!data || !data.email || !data.pass1) {
-            return res.status(400).json({message: 'Required field: Email, Password, Confirm Password'});
-        }
-        // const existsAcc = account.find(a => a.email === data.email && a.pass1 === data.pass1)
-        const existsAcc = await checkUser(data.email, data.pass1);
-        if (!existsAcc) {
-            return res.status(400).json({message: 'Account does not exist'});
-        }
-        const token = createToken(existsAcc);
-        return res.status(200).json({token});
-    } catch (error) {
-        console.error('Error logging in:', error);
-        return res.status(500).json({message: 'Internal server error'});
-    }
-});
+    router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = req.body;
+            if (!data || !data.email || !data.pass1) {
+                // return res.status(400).json({message: 'Required field: Email, Password, Confirm Password'});
+                throw new BadRequestError('Required field: Email, Password, Confirm Password')
+            }
+            // const existsAcc = account.find(a => a.email === data.email && a.pass1 === data.pass1)
+            const existsAcc = await checkUser(data.email, data.pass1);
+            if (!existsAcc) {
+                // return res.status(400).json({message: 'Account does not exist'});
+                throw new NotFoundError('Account does not exist')
 
-export default router;
+            }
+            const token = createToken(existsAcc);
+            return res.status(200).json({token});
+        } catch (error) {
+            // console.error('Error logging in:', error);
+            // return res.status(500).json({message: 'Internal server error'});
+            next(error);
+        }
+    });
+
+    export default router;

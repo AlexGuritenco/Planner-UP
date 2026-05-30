@@ -1,5 +1,6 @@
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import {Router} from 'express';
+import {UnauthorizedError, ForbiddenError, NotFoundError, BadRequestError} from "@src/routes/common/customErrors";
 
 const router = Router();
 
@@ -11,12 +12,12 @@ interface AccountData {
 }
 
 const accounts: AccountData[] = [
-  {
-    id: 1,
-    username: 'adminStudent',
-    email: 'admin@example.com',
-    password: 'password123'
-  }
+    {
+        id: 1,
+        username: 'adminStudent',
+        email: 'admin@example.com',
+        password: 'password123'
+    }
 ];
 
 const getUserById = (id: number): AccountData | undefined => {
@@ -41,83 +42,86 @@ const deleteAccount = (id: number): boolean => {
     return true;
 };
 
-router.get('/:id', (req: Request, res: Response) => {
-    // try {
-    //     const account = getUserById(parseInt(<string>req.params.id));
-    //     if (!account) {
-    //         return res.status(404).json({message: 'Account not found'});
-    //     }
-    //     return res.status(200).json(account.username);
-    // } catch(error) {
-    //     console.error('Error fetching account:', error);
-    //     return res.status(500).json({message: 'Internal server error'});
-    // }
+router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
-            return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
         const targetId = parseInt(<string>req.params.id)
         if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            throw new ForbiddenError('Forbidden: Access denied');
         }
         const account = getUserById(targetId);
         if (!account) {
-            return res.status(404).json({message: 'Account not found'});
+            // return res.status(404).json({message: 'Account not found'});
+            throw new NotFoundError('Account not found');
         }
         // return res.status(200).json(account.username);
         // better to send the email and the password, so strip away the pass
-        const { password, ...safeAccountDetails } = account;
+        const {password, ...safeAccountDetails} = account;
         return res.status(200).json(safeAccountDetails);
     } catch (error) {
-        console.error('Error fetching account:', error);
-        return res.status(500).json({message: 'Internal server error'});
+        // instead of here, send it to the global handler
+        // console.error('Error fetching account:', error);
+        // return res.status(500).json({message: 'Internal server error'});
+        next(error);
     }
 });
 
-router.patch('/:id', (req: Request, res: Response) => {
+router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
-            return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
         const targetId = parseInt(<string>req.params.id)
         if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            throw new ForbiddenError('Forbidden: Access denied');
         }
         const data = req.body as Partial<Omit<AccountData, 'id'>>;
         if (!data || Object.keys(data).length === 0) {
             return res.status(400).json({message: 'No fields provided'});
         }
         if (data.password != undefined && data.password !== req.body.pass2) {
-            return res.status(400).json({message: 'Passwords do not match'});
+            // return res.status(400).json({message: 'Passwords do not match'});
+            throw new BadRequestError('No fields provided');
         }
         const updated = patchAccount(parseInt(<string>req.params.id), data);
         if (!updated) {
-            return res.status(404).json({message: 'Account not found'});
+            throw new NotFoundError('Account not found');
         }
         return res.status(200).json({account: updated});
     } catch (error) {
-        console.error('Error updating account:', error);
-        return res.status(500).json({message: 'Internal server error'});
+        // console.error('Error updating account:', error);
+        // return res.status(500).json({message: 'Internal server error'});
+        next(error);
     }
 });
 
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
-            return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
+            throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
         const targetId = parseInt(<string>req.params.id)
         if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+            throw new ForbiddenError('Forbidden: Access denied')
         }
         const success = deleteAccount(parseInt(<string>req.params.id));
         if (!success) {
-            return res.status(404).json({message: 'Account not found'});
+            // return res.status(404).json({message: 'Account not found'});
+            throw new NotFoundError('Account not found');
         }
         return res.status(204).send();
     } catch (error) {
-        console.error('Error deleting account:', error);
-        return res.status(500).json({message: 'Internal server error'});
+        // console.error('Error deleting account:', error);
+        // return res.status(500).json({message: 'Internal server error'});
+        next(error);
     }
 });
 

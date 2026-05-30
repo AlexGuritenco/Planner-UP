@@ -1,14 +1,14 @@
-import { Router } from 'express';
+import {Router} from 'express';
 
 import Paths from '@src/common/constants/Paths';
 
-import authRoutes , { customAuthMiddleware } from './authRoutes';
+import authRoutes, {customAuthMiddleware} from './authRoutes';
 import tasksRoutes from './tasksRoutes';
 import accountRoutes from './accountRoutes';
 
 /******************************************************************************
-                                Setup
-******************************************************************************/
+ Setup
+ ******************************************************************************/
 
 const apiRouter = Router();
 
@@ -25,7 +25,7 @@ apiRouter.use(Paths.Tasks._, tasksRoutes);
 apiRouter.use(Paths.Account._, accountRoutes);
 
 /******************************************************************************
-                                Export
-******************************************************************************/
+ Export
+ ******************************************************************************/
 
 export default apiRouter;

@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import path from 'path';
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-
+import { CustomError } from '@src/routes/common/customErrors';
 import Paths from '@src/common/constants/Paths';
 import { RouteError } from '@src/common/utils/route-errors';
 import BaseRouter from '@src/routes/apiRouter';
@@ -45,10 +45,14 @@ app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
   if (EnvVars.NodeEnv !== NodeEnvs.TEST.valueOf()) {
     logger.err(err, true);
   }
-  if (err instanceof RouteError) {
-    res.status(err.status).json({ error: err.message });
+  // check if its one of our custom errors
+  if (err instanceof CustomError) {
+    return res.status(err.statusCode).json({ message: err.message });
   }
-  return next(err);
+  if (err instanceof RouteError) {
+    return res.status(err.status).json({ error: err.message });
+  }
+  return res.status(500).json({ message: 'Internal server error' });
 });
 
 // **** FrontEnd Content **** //
