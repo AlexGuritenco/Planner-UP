@@ -8,7 +8,7 @@ import AuthLayout from '../components/AuthLayout';
 import AuthInput from "../components/AuthInput";
 import api from '../api'
 import {jwtDecode} from 'jwt-decode';
-import {useAuth} from "../AuthContext";
+import {useAuth, type User} from "../AuthContext";
 
 export default function Login() {
     const navigate = useNavigate()
@@ -37,13 +37,11 @@ export default function Login() {
             return
         }
 
-        // navigate('/dashboard')
-        // instead of the navigate, we will do the api call
         setLoading(true)
         try {
             const response = await api.post('/auth/login', {email, pass1: password});
             const {token} = response.data
-            const user = jwtDecode<{ id: number; username: string; email: string }>(token)
+            const user = jwtDecode<User>(token)
             login(token, user);
             navigate('/dashboard')
         } catch (error: any) {

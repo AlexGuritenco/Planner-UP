@@ -10,17 +10,20 @@ import {useAuth} from '../AuthContext';
 
 export default function Account() {
     const {user} = useAuth();
+    const userId = user?._id;
     const [form, setForm] = useState({
         username: '',
         pass1: '',
         pass2: ''
     })
+
     useEffect(() => {
-    if (user?.id) {
-      api.get(`/account/${user.id}`)
-         .then(res => setForm(prev => ({ ...prev, username: res.data.username })));
-    }
-  }, [user?.id]);
+        if (!userId) return;
+
+        api.get(`/account/${userId}`)
+            .then(res => setForm(prev => ({...prev, username: res.data.username})));
+    }, [userId]);
+
     const [saved, setSaved] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +63,7 @@ export default function Account() {
             return
         }
         try {
-            await api.patch(`/account/${user?.id}`, {
+            await api.patch(`/account/${userId}`, {
                 username: form.username,
                 password: form.pass1,
                 pass2: form.pass2,

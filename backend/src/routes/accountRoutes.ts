@@ -1,67 +1,35 @@
 import type {NextFunction, Request, Response} from 'express';
 import {Router} from 'express';
 import {UnauthorizedError, ForbiddenError, NotFoundError, BadRequestError} from "@src/routes/common/customErrors";
+import {
+    getUserById,
+    patchAccount,
+    deleteAccount
+} from '@src/db'
+import {ObjectId} from "mongodb";
 
 const router = Router();
 
-interface AccountData {
-    id: number;
-    username: string;
-    email: string;
-    password: string;
-}
-
-const accounts: AccountData[] = [
-    {
-        id: 1,
-        username: 'adminStudent',
-        email: 'admin@example.com',
-        password: 'password123'
-    }
-];
-
-const getUserById = (id: number): AccountData | undefined => {
-    return accounts.find(acc => acc.id == id);
-};
-
-const patchAccount = (id: number, data: Partial<Omit<AccountData, 'id'>>): AccountData | null => {
-    const index = accounts.findIndex(acc => acc.id == id);
-    if (index === -1) return null;
-    // making sure the task exists, otherwise TS may think this can be undefined
-    const existingAccount = accounts[index]
-    if (!existingAccount) return null
-    const update = {...existingAccount, ...data};
-    accounts[index] = update;
-    return update;
-};
-
-const deleteAccount = (id: number): boolean => {
-    const index = accounts.findIndex(acc => acc.id == id);
-    if (index === -1) return false;
-    accounts.splice(index, 1)
-    return true;
-};
-
-router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
             // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
             throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
-        const targetId = parseInt(<string>req.params.id)
-        if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+        const {id} = req.params
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestError('Invalid task ID (ID not valid)')
+        }
+        if (req.loggedInUser._id !== id) {
             throw new ForbiddenError('Forbidden: Access denied');
         }
-        const account = getUserById(targetId);
+        const account = await getUserById(id);
         if (!account) {
             // return res.status(404).json({message: 'Account not found'});
             throw new NotFoundError('Account not found');
         }
-        // return res.status(200).json(account.username);
-        // better to send the email and the password, so strip away the pass
-        const {password, ...safeAccountDetails} = account;
-        return res.status(200).json(safeAccountDetails);
+        // we already handled the safe part inside the db so return the account we receive
+        return res.status(200).json(account);
     } catch (error) {
         // instead of here, send it to the global handler
         // console.error('Error fetching account:', error);
@@ -70,26 +38,26 @@ router.get('/:id', (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id', async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
-            // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
             throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
-        const targetId = parseInt(<string>req.params.id)
-        if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
+        const {id} = req.params;
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestError('Invalid account ID');
+        }
+        if (req.loggedInUser._id !== id) {
             throw new ForbiddenError('Forbidden: Access denied');
         }
-        const data = req.body as Partial<Omit<AccountData, 'id'>>;
+        const data = req.body;
         if (!data || Object.keys(data).length === 0) {
-            return res.status(400).json({message: 'No fields provided'});
-        }
-        if (data.password != undefined && data.password !== req.body.pass2) {
-            // return res.status(400).json({message: 'Passwords do not match'});
             throw new BadRequestError('No fields provided');
         }
-        const updated = patchAccount(parseInt(<string>req.params.id), data);
+        if (data.password !== undefined && data.password !== data.pass2) {
+            throw new BadRequestError('Passwords do not match');
+        }
+        const updated = await patchAccount(id, data);
         if (!updated) {
             throw new NotFoundError('Account not found');
         }
@@ -101,20 +69,20 @@ router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
     try {
         if (!req.isLoggedIn || !req.loggedInUser) {
-            // return res.status(401).json({message: 'Unauthorized: Please Sign Up / Log In'});
             throw new UnauthorizedError('Unauthorized: Please Sign Up / Log In');
         }
-        const targetId = parseInt(<string>req.params.id)
-        if (isNaN(targetId) || req.loggedInUser.id !== targetId) {
-            // return res.status(403).json({message: 'Forbidden: You do not have permission to access this account'});
-            throw new ForbiddenError('Forbidden: Access denied')
+        const {id} = req.params;
+        if (!ObjectId.isValid(id)) {
+            throw new BadRequestError('Invalid account ID');
         }
-        const success = deleteAccount(parseInt(<string>req.params.id));
+        if (req.loggedInUser._id !== id) {
+            throw new ForbiddenError('Forbidden: Access denied');
+        }
+        const success = await deleteAccount(id);
         if (!success) {
-            // return res.status(404).json({message: 'Account not found'});
             throw new NotFoundError('Account not found');
         }
         return res.status(204).send();

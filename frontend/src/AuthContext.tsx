@@ -1,7 +1,14 @@
 import { createContext, useContext, useState } from 'react';
 import type {ReactNode} from 'react';
 
-interface User { id: number; username: string; email: string; }
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+}
+
 interface AuthCtx {
   user: User | null;
   token: string | null;

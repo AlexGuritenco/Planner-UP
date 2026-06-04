@@ -5,7 +5,7 @@ declare global {
         export interface Request {
             isLoggedIn: boolean;
             loggedInUser?: {
-                id: number;
+                _id: string;
                 email: string;
                 username?: string;
             };
