@@ -3,8 +3,9 @@ import {Router} from 'express';
 import {NotFoundError, BadRequestError, ConflictError, UnauthorizedError} from "@src/routes/common/customErrors";
 import {
     createAccount,
-    checkUser, getUserById, getCollection
+    checkUser, getCollection
 } from "@src/db"
+import {RegisterSchema, LoginSchema} from "@src/validate";
 
 const router = Router();
 const bcrypt = require('bcryptjs');
@@ -53,12 +54,12 @@ export function customAuthMiddleware(req: Request, res: Response, next: NextFunc
 // The id identifies which task to replace; the full new task comes in the body
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data = req.body;
-        if (!data || !data.username || !data.email || !data.pass1 || !data.pass2 || data.pass1 !== data.pass2) {
-            // return res.status(400).json({message: 'Required field: Username, Email, Password, Confirm Password'});
-            throw new BadRequestError('Required field: Username, Email, Password, Confirm Password');
+        const result = RegisterSchema.safeParse(req.body);
+        if (!result.success) {
+            throw new BadRequestError(result.error.issues[0]?.message ?? 'Invalid account data');
         }
-        const exists = await getCollection('accounts').findOne({email: data.email});
+        const data = result.data
+        const exists = await getCollection('accounts').findOne({email: result.data.email});
         if (exists) {
             throw new ConflictError('Email already is use');
         }
@@ -72,12 +73,11 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
 
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const data = req.body;
-        if (!data || !data.email || !data.pass1) {
-            // return res.status(400).json({message: 'Required field: Email, Password, Confirm Password'});
-            throw new BadRequestError('Required field: Email, Password, Confirm Password')
+        const result = LoginSchema.safeParse(req.body);
+        if (!result.success) {
+            throw new BadRequestError(result.error.issues[0]?.message ?? 'Invalid account data');
         }
-        // const existsAcc = account.find(a => a.email === data.email && a.pass1 === data.pass1)
+        const data = result.data
         const existsAcc = await checkUser(data.email, data.pass1);
         if (!existsAcc) {
             // return res.status(400).json({message: 'Account does not exist'});

@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 // validation for task / taskRoutes
-const CreateTaskSchema = z.object({
+export const CreateTaskSchema = z.object({
     title: z.string().min(1).max(100),
     due: z.string(),
     description: z.string().min(1).max(500).optional(),
@@ -25,7 +25,7 @@ export const RegisterSchema = z.object({
 // validate for account login / authRoutes
 export const LoginSchema = z.object({
     email: z.string().email(),
-    pass: z.string().min(6).max(30),
+    pass1: z.string().min(6).max(30),
 });
 
 // same goes for account patch, fields should be optional

@@ -7,6 +7,7 @@ import {
     deleteAccount
 } from '@src/db'
 import {ObjectId} from "mongodb";
+import {PatchAccountSchema} from "@src/validate";
 
 const router = Router();
 
@@ -50,14 +51,11 @@ router.patch('/:id', async (req: Request<{ id: string }>, res: Response, next: N
         if (req.loggedInUser._id !== id) {
             throw new ForbiddenError('Forbidden: Access denied');
         }
-        const data = req.body;
-        if (!data || Object.keys(data).length === 0) {
-            throw new BadRequestError('No fields provided');
+        const result = PatchAccountSchema.safeParse(req.body);
+        if (!result.success) {
+            throw new BadRequestError(result.error.issues[0]?.message ?? 'Invalid account data');
         }
-        if (data.password !== undefined && data.password !== data.pass2) {
-            throw new BadRequestError('Passwords do not match');
-        }
-        const updated = await patchAccount(id, data);
+        const updated = await patchAccount(id, result.data);
         if (!updated) {
             throw new NotFoundError('Account not found');
         }

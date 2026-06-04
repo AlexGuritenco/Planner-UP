@@ -16,6 +16,7 @@
 // =============================================================================
 
 // Load environment variables from .env into process.env
+import type {PatchAccountInput, CreateTaskInput, PatchTaskInput} from '@src/validate';
 import bcrypt from "bcryptjs";
 
 require('dotenv').config();
@@ -62,38 +63,43 @@ interface Task {
 
 // create a task
 // db.ts
-export async function createTask(userId: string, data: Omit<Task, 'userId'>): Promise<Task> {
-    const doc = { ...data, userId };
+export async function createTask(userId: string, data: CreateTaskInput): Promise<Task> {
+    const doc = {...data, userId};
     await getCollection('tasks').insertOne(doc);
     return doc;
 }
 
 // read a task
 export async function getAllTasks(userId: string): Promise<Task[]> {
-    return getCollection('tasks').find({ userId }).toArray();
+    return getCollection('tasks').find({userId}).toArray();
 }
 
-export async function getTaskById(id: string): Promise<Task | null> {
+export async function getTaskById(id: string, userId: string): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
     // without the new objectid, _id is a string and cannot match a stored ObjectId
-    return getCollection('tasks').findOne({_id: new ObjectId(id)});
+    // also add the userId, to make sure it belongs to the user
+    return getCollection('tasks').findOne({_id: new ObjectId(id), userId});
 }
 
 // update
-export async function updateTask(id: string, data: Task): Promise<Task | null> {
+export async function updateTask(id: string, userId: string, data: CreateTaskInput): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
     return getCollection('tasks').findOneAndReplace(
-        {_id: new ObjectId(id)},
+        {_id: new ObjectId(id),
+            userId,
+        },
         // full replacement
         {...data},
         {returnDocument: 'after'}
     );
 }
 
-export async function patchTask(id: string, data: Task): Promise<Task | null> {
+export async function patchTask(id: string, userId: string, data: PatchTaskInput): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
     return getCollection('tasks').findOneAndUpdate(
-        {_id: new ObjectId(id)},
+        {_id: new ObjectId(id),
+            userId,
+        },
         // update only the provided fields
         {$set: data},
         {returnDocument: 'after'}
@@ -101,9 +107,9 @@ export async function patchTask(id: string, data: Task): Promise<Task | null> {
 }
 
 // delete
-export async function deleteTask(id: string): Promise<boolean> {
+export async function deleteTask(id: string, userId: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
-    const result = await getCollection('tasks').deleteOne({_id: new ObjectId(id)});
+    const result = await getCollection('tasks').deleteOne({_id: new ObjectId(id), userId});
     return result.deletedCount > 0;
 }
 
@@ -123,7 +129,7 @@ interface Register {
 }
 
 // create
-export async function createAccount(data: RegisterInput): Promise<RegisterInput> {
+export async function createAccount(data: RegisterInput): Promise<Register> {
     const hashedPassword = await bcrypt.hash(data.pass1, 10);
     const doc = {
         username: data.username,
@@ -131,7 +137,8 @@ export async function createAccount(data: RegisterInput): Promise<RegisterInput>
         pass1: hashedPassword,
     }
     await getCollection('accounts').insertOne(doc);
-    return doc;
+    const { pass1: _, ...safeDoc } = doc as any;
+    return safeDoc;
 }
 
 // check user
@@ -160,7 +167,7 @@ export async function getUserById(id: string): Promise<AccountData | null> {
 }
 
 // patch
-export async function patchAccount(id: string, data: AccountData): Promise<AccountData | null> {
+export async function patchAccount(id: string, data: PatchAccountInput): Promise<AccountData | null> {
     if (!ObjectId.isValid(id)) return null;
     return getCollection('accounts').findOneAndUpdate(
         {_id: new ObjectId(id)},
