@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import {Routes, Route, Navigate} from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -12,6 +12,7 @@ import type {Task} from "./components/types";
 import api from "./api";
 import {notification} from "antd";
 import ProtectedRoute from "./ProtectedRoutes";
+import {useTaskWebSocket} from "./hooks/useTaskWebSocket";
 
 const initialTasks: Task[] = []
 
@@ -19,28 +20,37 @@ export default function App() {
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-    // if we are logged in, we get all the tasks once on mount
-    useEffect(() => {
+    // use useCallBack so we dont recreate on rerendering
+    const fetchTasks = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (!token) return;
         // start the loading
         setIsLoading(true);
         setErrorMessage(null);
 
-        api.get('/tasks')
-            .then(res => setTasks(res.data.tasks ?? []))
-            .catch(error => {
-                setErrorMessage('Could not load tasks. Please try again.');
-                console.error(error);
-            })
-            .finally(() => setIsLoading(false));
+        try {
+            const res = await api.get('/tasks');
+            setTasks(res.data.tasks ?? []);
+        } catch (error) {
+            setErrorMessage('Could not load tasks. Please try again.');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    // Initial load on mount
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
+
+    useTaskWebSocket(setTasks, fetchTasks);
+
 
     // add - optimistic update: in case we catch an error, we roll back
     const addTask = async (task: Omit<Task, 'id' | 'done'>) => {
         // a temporary id
-        const tempId = Date.now();
+         const tempId = `temp_${Date.now()}`;
         const optimisticTask: Task = {...task, id: tempId, done: false};
         setTasks(prev => [...prev, optimisticTask]);
         try {
@@ -55,7 +65,7 @@ export default function App() {
         }
     }
 
-    const deleteTask = async (id: number) => {
+    const deleteTask = async (id: string) => {
         // first save the current tasks
         const currentTasks = tasks;
         setTasks(prev => prev.filter(
@@ -71,7 +81,7 @@ export default function App() {
     // we use this for changing the done status of the task( so it should:
     // copy the array and if the id matches, then it changes the done status
     // a patch request
-    const toggleTask = async (id: number) => {
+    const toggleTask = async (id: string) => {
         const currentTasks = tasks;
         setTasks(prev => prev.map(
             task => task.id === id ? {...task, done: !task.done} : task))
@@ -84,7 +94,7 @@ export default function App() {
         }
     }
     // same thing but put this time
-    const editTask = async (id: number, updatedTask: Partial<Task>) => {
+    const editTask = async (id: string, updatedTask: Partial<Task>) => {
         const currentTasks = tasks;
         setTasks(prev => prev.map(
             task => task.id === id ? {...task, ...updatedTask} : task))

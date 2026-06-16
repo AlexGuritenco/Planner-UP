@@ -61,49 +61,50 @@ interface Task {
     done: boolean;
 }
 
+// Maps a MongoDB task document (_id) to the frontend shape (id)
+function mapTask(doc: any) {
+    const { _id, ...rest } = doc;
+    return { ...rest, id: _id.toString() };
+}
+
 // create a task
-// db.ts
 export async function createTask(userId: string, data: CreateTaskInput): Promise<Task> {
     const doc = {...data, userId};
     await getCollection('tasks').insertOne(doc);
-    return doc;
+    return mapTask(doc);
 }
 
 // read a task
 export async function getAllTasks(userId: string): Promise<Task[]> {
-    return getCollection('tasks').find({userId}).toArray();
+    const docs = await getCollection('tasks').find({userId}).toArray();
+    return docs.map(mapTask);
 }
 
 export async function getTaskById(id: string, userId: string): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
-    // without the new objectid, _id is a string and cannot match a stored ObjectId
-    // also add the userId, to make sure it belongs to the user
-    return getCollection('tasks').findOne({_id: new ObjectId(id), userId});
+    const doc = await getCollection('tasks').findOne({_id: new ObjectId(id), userId});
+    return doc ? mapTask(doc) : null;
 }
 
 // update
 export async function updateTask(id: string, userId: string, data: CreateTaskInput): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
-    return getCollection('tasks').findOneAndReplace(
-        {_id: new ObjectId(id),
-            userId,
-        },
-        // full replacement
+    const doc = await getCollection('tasks').findOneAndReplace(
+        {_id: new ObjectId(id), userId},
         {...data},
         {returnDocument: 'after'}
     );
+    return doc ? mapTask(doc) : null;
 }
 
 export async function patchTask(id: string, userId: string, data: PatchTaskInput): Promise<Task | null> {
     if (!ObjectId.isValid(id)) return null;
-    return getCollection('tasks').findOneAndUpdate(
-        {_id: new ObjectId(id),
-            userId,
-        },
-        // update only the provided fields
+    const doc = await getCollection('tasks').findOneAndUpdate(
+        {_id: new ObjectId(id), userId},
         {$set: data},
         {returnDocument: 'after'}
     );
+    return doc ? mapTask(doc) : null;
 }
 
 // delete
@@ -180,6 +181,8 @@ export async function patchAccount(id: string, data: PatchAccountInput): Promise
 // delete
 export async function deleteAccount(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) return false;
+    // Delete all tasks belonging to this user before removing the account
+    await getCollection('tasks').deleteMany({ userId: id });
     const result = await getCollection('accounts').deleteOne({_id: new ObjectId(id)});
     return result.deletedCount > 0;
 }

@@ -6,7 +6,7 @@ type TaskRowProps = {
     index: number;
     onEdit: (task: Task) => void;
     onToggle: () => void;
-    onDelete: (taskId: number) => void;
+    onDelete: (taskId: string) => void;
 }
 
 export default function TaskRow({task, index, onEdit, onToggle, onDelete}: TaskRowProps) {

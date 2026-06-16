@@ -4,7 +4,7 @@ import type {Task} from "./types";
 type CompletedRowProps = {
     task: Task;
     index: number;
-    onDelete: (taskId: number) => void;
+    onDelete: (taskId: string) => void;
 }
 
 export default function CompletedRow({task, index, onDelete}: CompletedRowProps) {

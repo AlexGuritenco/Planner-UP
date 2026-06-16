@@ -2,14 +2,14 @@
 
 Planner UP is a planning and productivity project split into a React frontend and an Express/TypeScript backend.
 
-The frontend is connected to the backend API, and the backend now persists data in MongoDB instead of keeping it only in memory.
+The frontend is connected to the backend API, and the backend persists data in MongoDB. Real-time task synchronisation is handled via a native WebSocket server.
 
 ## Current Repository Layout
 
 ```text
 project/
 ├── frontend/      # React + Vite client
-├── backend/       # Express + TypeScript API + MongoDB
+├── backend/       # Express + TypeScript API + MongoDB + WebSocket
 └── README.md
 ```
 
@@ -39,8 +39,9 @@ The frontend lives in `frontend/` and is built with React and Vite.
   - completed tasks
   - remaining tasks
   - progress bar
-- Account page with username/password update flow
-- Confirmation dialogs for task deletion and completion
+- Account page with username/password update flow and account deletion
+- Confirmation dialogs for task deletion, completion, and account deletion
+- Real-time task sync via WebSocket (create, update, delete reflected instantly across tabs)
 
 ### Frontend Tech Stack
 
@@ -89,6 +90,25 @@ The backend lives in `backend/` and is built with Express and TypeScript.
 - Login returns a JWT token
 - Protected routes require `Authorization: Bearer <token>`
 - The server connects to MongoDB before it starts listening for requests
+- Deleting an account also deletes all tasks belonging to that user
+- After each task mutation (create, update, delete), the server pushes a WebSocket event to all active sessions of that user
+
+### WebSocket
+
+The WebSocket server runs on the same port as the REST API (no second port needed).
+
+**Connection flow:**
+1. Client opens `new WebSocket('ws://localhost:3000')`
+2. Client sends `{ type: 'subscribe', token: '<jwt>', interestedIn: ['task:created', 'task:updated', 'task:deleted'] }`
+3. Server verifies the JWT and validates the requested event types
+4. Server replies `{ type: 'subscribed' }`
+5. Server pushes `{ type: 'task:created' | 'task:updated' | 'task:deleted', payload }` after each mutation
+
+**Client behaviour:**
+- Subscription mechanism: client declares which events it wants; server only sends matching events
+- Idempotent handlers: each event type checks before applying to avoid duplicate state updates from optimistic UI
+- Exponential backoff reconnection: starts at 1s, doubles each attempt, caps at 30s
+- Re-fetches tasks via REST after reconnecting to catch any events missed while offline
 
 ### Backend Tech Stack
 
@@ -98,6 +118,7 @@ The backend lives in `backend/` and is built with Express and TypeScript.
 - MongoDB Node Driver
 - JWT (`jsonwebtoken`)
 - bcryptjs
+- ws (WebSocket server)
 - Vitest
 - ESLint
 - Prettier
@@ -164,42 +185,20 @@ API base URL:
 http://localhost:3000/api
 ```
 
-## Useful Scripts
+WebSocket URL:
 
-### Frontend
-
-```bash
-cd frontend
-npm run dev
-npm run build
-npm run preview
-npm run lint
+```text
+ws://localhost:3000
 ```
-
-### Backend
-
-```bash
-cd backend
-npm run dev
-npm run build
-npm run start
-npm run test
-npm run lint
-npm run type-check
-```
-
 ## Project Status
 
-This is now a working split frontend/backend project with MongoDB persistence.
+### Implemented
 
-What is already implemented:
-
-- frontend authentication, account, dashboard, agenda, and stats flows
-- frontend integration with backend auth/account/task endpoints
-- backend REST endpoints for auth, tasks, and account management
+- Frontend authentication, account, dashboard, agenda, and stats flows
+- Frontend integration with backend auth/account/task endpoints
+- Backend REST endpoints for auth, tasks, and account management
 - MongoDB persistence for accounts and tasks
 - JWT-based protected routes
-
-What is still missing or partial:
-
-- WebSockets implementation
+- Account deletion with cascade delete of all user tasks
+- WebSocket server with JWT authentication and subscription mechanism
+- Real-time task sync across browser tabs with idempotent handlers and exponential backoff reconnection

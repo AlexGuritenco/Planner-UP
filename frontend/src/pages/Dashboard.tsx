@@ -12,9 +12,9 @@ type TaskInput = Omit<Task, "id" | "done">;
 type DashboardProps = {
     tasks: Task[]
     onAdd: (task: TaskInput) => void
-    onDelete: (taskId: number) => void
-    onToggle: (taskId: number) => void
-    onEdit: (taskId: number, updatedTask: TaskInput) => void
+    onDelete: (taskId: string) => void
+    onToggle: (taskId: string) => void
+    onEdit: (taskId: string, updatedTask: TaskInput) => void
     loading: boolean
     errorMessage: string | null
 }
@@ -22,8 +22,8 @@ type DashboardProps = {
 export default function Dashboard({tasks, onAdd, onDelete, onToggle, onEdit, loading, errorMessage}: DashboardProps) {
     const [showModal, setShowModal] = useState(false)
     const [editingTask, setEditingTask] = useState<Task | null>(null)
-    const [deleteTask, setDeleteTask] = useState<number | null>(null)
-    const [toggleTask, setToggleTask] = useState<number | null>(null)
+    const [deleteTask, setDeleteTask] = useState<string | null>(null)
+    const [toggleTask, setToggleTask] = useState<string | null>(null)
 
     const pendingTasks = tasks.filter(task => !task.done)
     const completedTasks = tasks.filter(task => task.done)

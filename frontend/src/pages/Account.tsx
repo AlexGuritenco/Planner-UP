@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import PageLayout from "../components/PageLayout";
 import PasswordInput from "../components/PasswordHandler";
 import {usernameValidation} from '../utils/validators';
@@ -7,15 +8,19 @@ import AuthInput from "../components/AuthInput";
 import {notification} from 'antd';
 import api from '../api';
 import {useAuth} from '../AuthContext';
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function Account() {
-    const {user} = useAuth();
+    const {user, logout} = useAuth();
     const userId = user?._id;
+    const navigate = useNavigate();
     const [form, setForm] = useState({
         username: '',
         pass1: '',
         pass2: ''
     })
+    const [saved, setSaved] = useState(false)
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     useEffect(() => {
         if (!userId) return;
@@ -24,12 +29,10 @@ export default function Account() {
             .then(res => setForm(prev => ({...prev, username: res.data.username})));
     }, [userId]);
 
-    const [saved, setSaved] = useState(false)
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSaved(false)
         setForm(prev => ({...prev, [e.target.name]: e.target.value}))
-    }
+    };
     const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!form.username.trim()) {
@@ -73,7 +76,19 @@ export default function Account() {
         } catch (error: any) {
             notification.error({title: error.response?.data?.message ?? 'Failed to update account'});
         }
-    }
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            await api.delete(`/account/${userId}`);
+            logout();
+            navigate('/');
+        } catch (error: any) {
+            notification.error({title: error.response?.data?.message ?? 'Failed to delete account'});
+        } finally {
+            setShowDeleteDialog(false);
+        }
+    };
 
     return (
         <PageLayout className={"page-content"}>
@@ -86,7 +101,7 @@ export default function Account() {
 
                             <AuthInput
                                 id={"username"}
-                                name={"username"}
+                                name={"Username"}
                                 icon={<CiUser className="form__icon form__icon--right"/>}
                             >
                                 <input
@@ -132,8 +147,33 @@ export default function Account() {
                             </button>
                         </fieldset>
                     </form>
+
+                    <div className="danger-account-delete">
+                        <h3 className='danger-account-delete-h3'>Danger Zone</h3>
+                        <p className='danger-account-delete-p'>
+                            Permanently delete your account. <br/>
+                            This cannot be undone.
+                        </p>
+                        <button
+                            className="button button--thirdly form__submit"
+                            style={{backgroundColor: '#dc2626', color: 'white'}}
+                            type="button"
+                            onClick={() => setShowDeleteDialog(true)}
+                        >
+                            Delete Account
+                        </button>
+                    </div>
                 </section>
             </div>
+
+            <ConfirmDialog
+                open={showDeleteDialog}
+                title="Delete Account"
+                message="Are you sure you want to delete your account? All your tasks will be permanently deleted. This action cannot be undone."
+                confirmLabel="Delete Account"
+                onCancel={() => setShowDeleteDialog(false)}
+                onOK={handleDeleteAccount}
+            />
         </PageLayout>
-    )
+    );
 }
